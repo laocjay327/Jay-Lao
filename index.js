@@ -22,26 +22,49 @@ const markCommit = (x, y) => {
   });
 };
 
-const makeCommits = (n) => {
-  if (n === 0) return simpleGit().push();
+// Generate random commit dates between Sept 22 and Dec 28, 2024
+const generateRandomCommitDates = () => {
+  const start = moment("2024-09-22");
+  const end = moment("2024-12-28");
+  const days = end.diff(start, "days");
+  let dates = [];
 
-  // Date range: Aug 4, 2024 to Sept 21, 2024
-  // Aug 4 is start.
-  // Difference in days:
-  // Aug 4 to Aug 31 = 27 days
-  // Sept 1 to Sept 21 = 21 days
-  // Total range = 48 days
-  const daysToAdd = random.int(0, 48);
+  // Randomly decide how many days will have commits (not all days)
+  const daysWithCommits = random.int(Math.floor(days * 0.5), days); // 50% to 100% of days
+  let usedDays = new Set();
 
-  const date = moment("2024-08-04").add(daysToAdd, "d").format();
+  while (usedDays.size < daysWithCommits) {
+    usedDays.add(random.int(0, days));
+  }
 
-  const data = {
-    date: date,
-  };
+  usedDays.forEach(dayOffset => {
+    // Random number of commits for this day (1-4)
+    const numCommits = random.int(1, 4);
+    for (let i = 0; i < numCommits; i++) {
+      // Randomize commit time during the day
+      const hour = random.int(0, 23);
+      const minute = random.int(0, 59);
+      const second = random.int(0, 59);
+      const date = moment(start).add(dayOffset, "days").set({ hour, minute, second }).format();
+      dates.push(date);
+    }
+  });
+
+  // Shuffle dates for randomness
+  dates = dates.sort(() => Math.random() - 0.5);
+  return dates;
+};
+
+const commitDates = generateRandomCommitDates();
+
+const makeCommits = (dates) => {
+  if (dates.length === 0) return simpleGit().push();
+  const date = dates[0];
+  const data = { date };
   console.log(date);
   jsonfile.writeFile(path, data, () => {
-    simpleGit().add([path]).commit(date, { "--date": date }, makeCommits.bind(this, --n));
+    simpleGit().add([path]).commit(date, { "--date": date }, () => makeCommits(dates.slice(1)));
   });
 };
 
-makeCommits(100);
+makeCommits(commitDates);
