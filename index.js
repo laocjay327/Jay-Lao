@@ -22,10 +22,10 @@ const markCommit = (x, y) => {
   });
 };
 
-// Generate random commit dates between Sept 22 and Dec 28, 2024
+// Generate random commit dates between Jan 30 and Dec 31, 2025
 const generateRandomCommitDates = () => {
-  const start = moment("2024-09-22");
-  const end = moment("2024-12-28");
+  const start = moment("2025-01-30");
+  const end = moment("2025-12-31");
   const days = end.diff(start, "days");
   let dates = [];
 
